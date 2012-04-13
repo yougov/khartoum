@@ -12,7 +12,7 @@ import gzip_util
 
 # default configuration.  Overridable.
 config = {
-    'host': 'localhost',
+    'host': '0.0.0.0',
     'port': 8000,
     'mongo_host': 'localhost',
     'mongo_port': '27017',
@@ -29,6 +29,8 @@ def read_config():
         # look for a settings.yaml file in cwd
         if os.path.isfile('settings.yaml'):
             config.update(yaml.safe_load(open('settings.yaml')))
+
+    config['port'] = int(os.environ.get('PORT', config['port']))
     # TODO: read from heroku style env vars as well.
 
 
