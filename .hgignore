@@ -1,0 +1,16 @@
+syntax: glob
+settings.yaml
+*pyc
+*swp
+logs/*.log
+env/*
+conf/*
+._*
+NOTES
+develop-eggs/*
+bin/*
+eggs/*
+lib/*
+roles/*
+build/*
+dist/*
