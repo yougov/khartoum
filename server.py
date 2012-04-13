@@ -1,6 +1,5 @@
 import os
 import mimetypes
-import posixpath
 
 from gevent.wsgi import WSGIServer
 from gevent import monkey
@@ -30,24 +29,28 @@ def read_config():
         if os.path.isfile('settings.yaml'):
             config.update(yaml.safe_load(open('settings.yaml')))
 
-    config['port'] = int(os.environ.get('PORT', config['port']))
+    config['port'] = os.environ.get('PORT', config['port'])
     # TODO: read from heroku style env vars as well.
 
 
-def make_app(db, fs):
+class Khartoum(object):
+    def __init__(self, db, app_config):
+        self.db = db
+        self.config = app_config
+        self.fs = gridfs.GridFS(db, self.config['mongo_collection'])
 
-    def app(environ, start_response):
+    def __call__(self, environ, start_response):
         path = environ['PATH_INFO']
         if path.startswith('/'):
             path = path[1:]
 
-        doc = db.fs.files.find_one({'filename':path})
+        doc = self.db.fs.files.find_one({'filename':path})
 
         if not doc:
             start_response("404 NOT FOUND", [('Content-Type', 'text/plain')])
             return "File not found"
 
-        f = fs.get(doc['_id'])
+        f = self.fs.get(doc['_id'])
         headers = [("Vary", "Accept-Encoding")]
         mimetype, encoding = mimetypes.guess_type(f.name)
 
@@ -55,14 +58,11 @@ def make_app(db, fs):
             headers.append(('Content-Type', mimetype))
 
         if gzip_util.client_wants_gzip(environ.get('HTTP_ACCEPT_ENCODING', '')):
-            #f = gzip_util.GzipWrap(f, str(posixpath.basename(f.name)))
             f = gzip_util.compress(f, 9)
             headers.append(("Content-Encoding", "gzip"))
 
         start_response("200 OK", headers)
         return f
-
-    return app
 
 
 def main():
@@ -72,10 +72,9 @@ def main():
 
     conn = pymongo.Connection(config['mongo_host'], int(config['mongo_port']))
     db = conn[config['mongo_db']]
-    fs = gridfs.GridFS(db, config['mongo_collection'])
 
-    address = config['host'], config['port']
-    server = WSGIServer(address, make_app(db, fs))
+    address = config['host'], int(config['port'])
+    server = WSGIServer(address, Khartoum(db, config))
     try:
         print "Server running on port %s:%d. Ctrl+C to quit" % address
         server.serve_forever()
