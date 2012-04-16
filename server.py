@@ -17,6 +17,14 @@ config = {
     'mongo_port': '27017',
     'mongo_db': 'test',
     'mongo_collection': 'fs',
+    # There's little point compressing pngs, jpgs, tar.gz files, etc, and it's
+    # really slow, so save compression for the file types where it pays off.
+    'compressable_mimetypes': [
+        'text/plain',
+        'text/html',
+        'application/javascript',
+        'text/css',
+    ]
 }
 
 
@@ -57,7 +65,9 @@ class Khartoum(object):
         if mimetype:
             headers.append(('Content-Type', mimetype))
 
-        if gzip_util.client_wants_gzip(environ.get('HTTP_ACCEPT_ENCODING', '')):
+        if (mimetype in config['compressable_mimetypes'] and
+            gzip_util.client_wants_gzip(environ.get('HTTP_ACCEPT_ENCODING',
+                                                    ''))):
             f = gzip_util.compress(f, 9)
             headers.append(("Content-Encoding", "gzip"))
 
