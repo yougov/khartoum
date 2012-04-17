@@ -24,7 +24,8 @@ config = {
         'text/html',
         'application/javascript',
         'text/css',
-    ]
+    ],
+    'compression_level': 6, # gzip compression level.  An int from 1-9
 }
 
 
@@ -65,10 +66,10 @@ class Khartoum(object):
         if mimetype:
             headers.append(('Content-Type', mimetype))
 
-        if (mimetype in config['compressable_mimetypes'] and
+        if (mimetype in self.config['compressable_mimetypes'] and
             gzip_util.client_wants_gzip(environ.get('HTTP_ACCEPT_ENCODING',
                                                     ''))):
-            f = gzip_util.compress(f, 9)
+            f = gzip_util.compress(f, self.config['compression_level'])
             headers.append(("Content-Encoding", "gzip"))
 
         start_response("200 OK", headers)
