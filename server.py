@@ -1,5 +1,6 @@
 import os
 import mimetypes
+import urlparse
 
 from gevent.wsgi import WSGIServer
 from gevent import monkey
@@ -50,16 +51,20 @@ class Khartoum(object):
 
     def __call__(self, environ, start_response):
         path = environ['PATH_INFO']
+        qparams = urlparse.parse_qs(environ['QUERY_STRING'])
         if path.startswith('/'):
             path = path[1:]
 
-        doc = self.db.fs.files.find_one({'filename':path})
-
-        if not doc:
+        # The 'v' parameter in the query string may specify a file version.
+        # If none is provided, then '-1' is used, which will return the most
+        # recent version.
+        version = int(qparams.get('v', [-1])[0])
+        try:
+            f = self.fs.get_version(path, version)
+        except gridfs.errors.NoFile:
             start_response("404 NOT FOUND", [('Content-Type', 'text/plain')])
             return "File not found"
 
-        f = self.fs.get(doc['_id'])
         headers = [("Vary", "Accept-Encoding")]
         mimetype, encoding = mimetypes.guess_type(f.name)
 
