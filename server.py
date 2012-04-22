@@ -2,7 +2,7 @@ import os
 import mimetypes
 import urlparse
 
-from gevent.wsgi import WSGIServer
+from gevent.pywsgi import WSGIServer
 from gevent import monkey
 import pymongo
 import gridfs
@@ -31,13 +31,16 @@ config = {
 
 
 def read_config():
-    # check for APP_SETTINGS_YAML env var and read settings from it if found.
+    # Default settings are stored in the 'config' dict in this module.  The
+    # defaults may be overridden by passing in an APP_SETTINGS_YAML environment
+    # variable that points to a yaml file on disk, or by putting a
+    # 'settings.yaml' file in the current working directory.
+
+    # Additionally, the PORT environment variable will be used if set.
     if 'APP_SETTINGS_YAML' in os.environ:
         config.update(yaml.safe_load(open(os.environ['APP_SETTINGS_YAML'])))
-    else:
-        # look for a settings.yaml file in cwd
-        if os.path.isfile('settings.yaml'):
-            config.update(yaml.safe_load(open('settings.yaml')))
+    elif os.path.isfile('settings.yaml'):
+        config.update(yaml.safe_load(open('settings.yaml')))
 
     config['port'] = os.environ.get('PORT', config['port'])
     # TODO: read from heroku style env vars as well.
@@ -51,9 +54,10 @@ class Khartoum(object):
 
     def __call__(self, environ, start_response):
         path = environ['PATH_INFO']
-        qparams = urlparse.parse_qs(environ['QUERY_STRING'])
         if path.startswith('/'):
             path = path[1:]
+
+        qparams = urlparse.parse_qs(environ['QUERY_STRING'])
 
         # The 'v' parameter in the query string may specify a file version.
         # If none is provided, then '-1' is used, which will return the most
@@ -63,7 +67,7 @@ class Khartoum(object):
             f = self.fs.get_version(path, version)
         except gridfs.errors.NoFile:
             start_response("404 NOT FOUND", [('Content-Type', 'text/plain')])
-            return "File not found"
+            return "File not found\n"
 
         headers = [("Vary", "Accept-Encoding")]
         mimetype, encoding = mimetypes.guess_type(f.name)
