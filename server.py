@@ -70,19 +70,29 @@ class Khartoum(object):
             return "File not found\n"
 
         headers = [("Vary", "Accept-Encoding")]
-        mimetype, encoding = mimetypes.guess_type(f.name)
 
+        mimetype, encoding = mimetypes.guess_type(f.name)
         if mimetype:
             headers.append(('Content-Type', mimetype))
 
-        if (mimetype in self.config['compressable_mimetypes'] and
-            gzip_util.client_wants_gzip(environ.get('HTTP_ACCEPT_ENCODING',
-                                                    ''))):
+        if self._use_gzip(mimetype, environ):
             f = gzip_util.compress(f, self.config['compression_level'])
             headers.append(("Content-Encoding", "gzip"))
+        else:
+            headers.append(('Content-Length', str(f.length)))
 
         start_response("200 OK", headers)
         return f
+
+    def _use_gzip(self, mimetype, environ):
+        if not mimetype in self.config['compressable_mimetypes']:
+            return False
+
+        encode_header = environ.get('HTTP_ACCEPT_ENCODING', '')
+        if not gzip_util.gzip_requested(encode_header):
+            return False
+
+        return True
 
 
 def main():

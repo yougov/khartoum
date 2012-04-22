@@ -23,7 +23,8 @@ def parse_encoding_header(header):
     return encodings
 
 
-def client_wants_gzip(accept_encoding_header):
+def gzip_requested(accept_encoding_header):
+
     """
     Check to see if the client can accept gzipped output, and whether or
     not it is even the preferred method. If `identity` is higher, then no
