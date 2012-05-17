@@ -25,10 +25,15 @@ def main():
         help="The URI for the store. Defaults to "
             "mongodb://localhost/khartoum.fs",
     )
+    parser.add_argument('--prefix',
+        help="A prefix for the filename (like 'foo/bar/')",
+        default = '',
+        )
     args = parser.parse_args()
 
     with open(args.input_file, 'rb') as infile:
-        args.store.put(infile, filename=os.path.basename(args.input_file))
+        filename = os.path.basename(args.input_file)
+        args.store.put(infile, filename=args.prefix + filename)
 
 if __name__ == '__main__':
     main()
