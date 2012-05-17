@@ -4,6 +4,10 @@ import urlparse
 
 from gevent.pywsgi import WSGIServer
 from gevent import monkey
+
+# monkeypatch all socket things before importing pymongo.
+monkey.patch_all()
+
 import pymongo
 import gridfs
 import yaml
@@ -96,7 +100,6 @@ class Khartoum(object):
 
 
 def main():
-    monkey.patch_all()
 
     read_config()
 
