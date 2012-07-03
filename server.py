@@ -57,7 +57,9 @@ class Khartoum(object):
         self.fs = gridfs.GridFS(db, self.config['mongo_collection'])
 
     def __call__(self, environ, start_response):
-        path = environ['PATH_INFO']
+        # PATH_INFO may actually be a full URL, if the request was forwarded
+        # from a proxy.
+        path = urlparse.urlparse(environ['PATH_INFO']).path
         if path.startswith('/'):
             path = path[1:]
 
