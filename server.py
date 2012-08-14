@@ -1,6 +1,9 @@
 import os
 import mimetypes
 import urlparse
+from wsgiref.handlers import format_date_time
+from datetime import datetime, timedelta
+from time import mktime
 
 from gevent.pywsgi import WSGIServer
 from gevent import monkey
@@ -30,7 +33,8 @@ config = {
         'application/javascript',
         'text/css',
     ],
-    'compression_level': 6, # gzip compression level.  An int from 1-9
+    'compression_level': 6,  # gzip compression level.  An int from 1-9
+    'expires_days': 365,  # Long live the caches!
 }
 
 
@@ -86,6 +90,12 @@ class Khartoum(object):
             headers.append(("Content-Encoding", "gzip"))
         else:
             headers.append(('Content-Length', str(f.length)))
+
+        if config.get('expires_days') is not None:
+            expiration = (datetime.now() +
+                          timedelta(days=config['expires_days']))
+            stamp = mktime(expiration.timetuple())
+            headers.append(('Expires', format_date_time(stamp)))
 
         start_response("200 OK", headers)
         return f
