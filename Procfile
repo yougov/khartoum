@@ -1,1 +1,1 @@
-web: env/bin/python server.py
+web: python server.py
