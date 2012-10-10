@@ -97,6 +97,10 @@ class Khartoum(object):
             stamp = mktime(expiration.timetuple())
             headers.append(('Expires', format_date_time(stamp)))
 
+        extra_headers = config.get('extra_headers')
+        if extra_headers:
+            headers.extend(extra_headers.items())
+
         start_response("200 OK", headers)
         return f
 
