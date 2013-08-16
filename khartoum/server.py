@@ -12,46 +12,82 @@ from gevent import monkey
 monkey.patch_all()
 
 import pymongo
+from pymongo.uri_parser import parse_uri as parse_mongo_uri
 import gridfs
 import yaml
 
 import gzip_util
 
-# default configuration.  Overridable.
-config = {
-    'host': '0.0.0.0',
-    'port': 8000,
-    'mongo_host': 'localhost',
-    'mongo_port': '27017',
-    'mongo_db': 'test',
-    'mongo_collection': 'fs',
-    # There's little point compressing pngs, jpgs, tar.gz files, etc, and it's
-    # really slow, so save compression for the file types where it pays off.
-    'compressable_mimetypes': [
-        'text/plain',
-        'text/html',
-        'application/javascript',
-        'text/css',
-    ],
-    'compression_level': 6,  # gzip compression level.  An int from 1-9
-    'expires_days': 365,  # Long live the caches!
-}
+def get_config():
+    """
+    Return necessary configuration.  If APP_SETTINGS_YAML env var is set, that
+    file will be read into config.
 
+    If MONGODB_URL env var is set, that will override the config file.
 
-def read_config():
-    # Default settings are stored in the 'config' dict in this module.  The
-    # defaults may be overridden by passing in an APP_SETTINGS_YAML environment
-    # variable that points to a yaml file on disk, or by putting a
-    # 'settings.yaml' file in the current working directory.
+    If PORT env var is set, that will also override the config file.
+    """
+
+    # default configuration.  Overridable.
+    config = {
+        'host': '0.0.0.0',
+        'port': 8000,
+        'mongo_host': 'localhost',
+        'mongo_port': None,
+        'mongo_db': 'test',
+        'mongo_collection': 'fs',
+        # There's little point compressing pngs, jpgs, tar.gz files, etc, and it's
+        # really slow, so save compression for the file types where it pays off.
+        'compressable_mimetypes': [
+            'text/plain',
+            'text/html',
+            'application/javascript',
+            'text/css',
+        ],
+        'compression_level': 6,  # gzip compression level.  An int from 1-9
+        'expires_days': 365,  # Long live the caches!
+    }
 
     # Additionally, the PORT environment variable will be used if set.
     if 'APP_SETTINGS_YAML' in os.environ:
         config.update(yaml.safe_load(open(os.environ['APP_SETTINGS_YAML'])))
+
+        # If yaml file had MONGODB_URL setting in it, convert that to the
+        # config shape we expect
+        if 'MONGODB_URL' in config:
+            config.update(mongo_uri_to_config(config['MONGODB_URL']))
+
     elif os.path.isfile('settings.yaml'):
         config.update(yaml.safe_load(open('settings.yaml')))
 
+    # PORT env var overrides settings.yaml
     config['port'] = os.environ.get('PORT', config['port'])
-    # TODO: read from heroku style env vars as well.
+
+
+    # MONGODB_URL env var overrides settings.yaml
+    mongo_envvar = os.environ.get('MONGODB_URL')
+    if mongo_envvar:
+        config.update(mongo_uri_to_config(mongo_envvar))
+
+    return config
+
+
+def mongo_uri_to_config(mongo_uri, defaults=None):
+    """
+    Given a Mongo DB URL like that expected by pymongo.uri_parser, parse it
+    into a dict and convert its keys to match the names used in Khartoum
+    config.
+    """
+    parsed = parse_mongo_uri(mongo_uri)
+
+    return {
+        # pymongo.Connection supports just passing in a URI for the host, in
+        # which case we should leave port as None
+        'mongo_host': mongo_uri,
+        'mongo_port': None,
+        'mongo_db': parsed['database'],
+        'mongo_collection': parsed['collection']
+    }
 
 
 class Khartoum(object):
@@ -91,13 +127,13 @@ class Khartoum(object):
         else:
             headers.append(('Content-Length', str(f.length)))
 
-        if config.get('expires_days') is not None:
+        if self.config.get('expires_days') is not None:
             expiration = (datetime.now() +
-                          timedelta(days=config['expires_days']))
+                          timedelta(days=self.config['expires_days']))
             stamp = mktime(expiration.timetuple())
             headers.append(('Expires', format_date_time(stamp)))
 
-        extra_headers = config.get('extra_headers')
+        extra_headers = self.config.get('extra_headers')
         if extra_headers:
             headers.extend(extra_headers.items())
 
@@ -117,9 +153,14 @@ class Khartoum(object):
 
 def main():
 
-    read_config()
+    config = get_config()
 
-    conn = pymongo.Connection(config['mongo_host'], int(config['mongo_port']))
+    mongo_port = config['mongo_port']
+    conn = pymongo.Connection(
+        host=config['mongo_host'],
+        port=int(mongo_port) if mongo_port else None
+    )
+
     db = conn[config['mongo_db']]
 
     address = config['host'], int(config['port'])
