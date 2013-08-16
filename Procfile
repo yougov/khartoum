@@ -1,1 +1,1 @@
-web: python khartoum/server.py
+web: khartoum
