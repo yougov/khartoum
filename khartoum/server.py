@@ -1,4 +1,3 @@
-import os
 import mimetypes
 import urlparse
 from wsgiref.handlers import format_date_time
@@ -14,87 +13,49 @@ monkey.patch_all()
 import pymongo
 from pymongo.uri_parser import parse_uri as parse_mongo_uri
 import gridfs
-import yaml
+from appsettings import SettingsParser
 
-import gzip_util
+from khartoum import gzip_util
 
-def get_config():
+
+def get_settings():
     """
-    Return necessary configuration.  If APP_SETTINGS_YAML env var is set, that
-    file will be read into config.
-
-    If MONGODB_URL env var is set, that will override the config file.
-
-    If PORT env var is set, that will also override the config file.
+    Set up and return the SettingsParser.
     """
+    parser = SettingsParser()
+    parser.add_argument('--host', default='0.0.0.0', env_var='HOST')
+    parser.add_argument('--port', default=8000, type=int, env_var='PORT')
+    parser.add_argument('--mongo_url',
+                        default='mongodb://localhost/khartoum.fs',
+                        env_var='MONGODB_URL')
+    parser.add_argument('--compression_level', default=6, type=int,
+                        env_var='COMPRESSION_LEVEL')
 
-    # default configuration.  Overridable.
-    config = {
-        'host': '0.0.0.0',
-        'port': 8000,
-        'mongo_host': 'localhost',
-        'mongo_port': None,
-        'mongo_db': 'test',
-        'mongo_collection': 'fs',
-        # There's little point compressing pngs, jpgs, tar.gz files, etc, and it's
-        # really slow, so save compression for the file types where it pays off.
-        'compressable_mimetypes': [
+    parser.add_argument('--cache_days', default=365, type=int,
+                        env_var='CACHE_DAYS')
+
+    settings = parser.parse_args()
+
+    # The set of compressable mimetypes might be configured from a yaml file,
+    # but can't be set on the command line or in an env var, so we don't add an
+    # argument for that.  Instead, just stick the default on right here if a
+    # config file hasn't already set it.
+    if not hasattr(settings, 'compressable_mimetypes'):
+        settings.compressable_mimetypes = [
             'text/plain',
             'text/html',
             'application/javascript',
             'text/css',
-        ],
-        'compression_level': 6,  # gzip compression level.  An int from 1-9
-        'expires_days': 365,  # Long live the caches!
-    }
+        ]
 
-    # Additionally, the PORT environment variable will be used if set.
-    if 'APP_SETTINGS_YAML' in os.environ:
-        config.update(yaml.safe_load(open(os.environ['APP_SETTINGS_YAML'])))
-
-        # If yaml file had MONGODB_URL setting in it, convert that to the
-        # config shape we expect
-        if 'MONGODB_URL' in config:
-            config.update(mongo_uri_to_config(config['MONGODB_URL']))
-
-    elif os.path.isfile('settings.yaml'):
-        config.update(yaml.safe_load(open('settings.yaml')))
-
-    # PORT env var overrides settings.yaml
-    config['port'] = os.environ.get('PORT', config['port'])
-
-
-    # MONGODB_URL env var overrides settings.yaml
-    mongo_envvar = os.environ.get('MONGODB_URL')
-    if mongo_envvar:
-        config.update(mongo_uri_to_config(mongo_envvar))
-
-    return config
-
-
-def mongo_uri_to_config(mongo_uri, defaults=None):
-    """
-    Given a Mongo DB URL like that expected by pymongo.uri_parser, parse it
-    into a dict and convert its keys to match the names used in Khartoum
-    config.
-    """
-    parsed = parse_mongo_uri(mongo_uri)
-
-    return {
-        # pymongo.Connection supports just passing in a URI for the host, in
-        # which case we should leave port as None
-        'mongo_host': mongo_uri,
-        'mongo_port': None,
-        'mongo_db': parsed['database'],
-        'mongo_collection': parsed['collection']
-    }
+    return settings
 
 
 class Khartoum(object):
-    def __init__(self, db, app_config):
+    def __init__(self, db, settings):
         self.db = db
-        self.config = app_config
-        self.fs = gridfs.GridFS(db, self.config['mongo_collection'])
+        self.settings = settings
+        self.fs = gridfs.GridFS(db, settings.mongo_collection)
 
     def __call__(self, environ, start_response):
         # PATH_INFO may actually be a full URL, if the request was forwarded
@@ -122,18 +83,18 @@ class Khartoum(object):
             headers.append(('Content-Type', mimetype))
 
         if self._use_gzip(mimetype, environ):
-            f = gzip_util.compress(f, self.config['compression_level'])
+            f = gzip_util.compress(f, self.settings.compression_level)
             headers.append(("Content-Encoding", "gzip"))
         else:
             headers.append(('Content-Length', str(f.length)))
 
-        if self.config.get('expires_days') is not None:
+        if self.settings.cache_days is not None:
             expiration = (datetime.now() +
-                          timedelta(days=self.config['expires_days']))
+                          timedelta(days=self.settings.cache_days))
             stamp = mktime(expiration.timetuple())
             headers.append(('Expires', format_date_time(stamp)))
 
-        extra_headers = self.config.get('extra_headers')
+        extra_headers = getattr(self.settings, 'extra_headers', None)
         if extra_headers:
             headers.extend(extra_headers.items())
 
@@ -141,7 +102,7 @@ class Khartoum(object):
         return f
 
     def _use_gzip(self, mimetype, environ):
-        if not mimetype in self.config['compressable_mimetypes']:
+        if not mimetype in self.settings.compressable_mimetypes:
             return False
 
         encode_header = environ.get('HTTP_ACCEPT_ENCODING', '')
@@ -153,24 +114,22 @@ class Khartoum(object):
 
 def main():
 
-    config = get_config()
+    settings = get_settings()
 
-    mongo_port = config['mongo_port']
-    conn = pymongo.Connection(
-        host=config['mongo_host'],
-        port=int(mongo_port) if mongo_port else None
-    )
+    print "Connecting to %s." % settings.mongo_url
+    mongo_parsed = parse_mongo_uri(settings.mongo_url)
+    settings.mongo_collection = mongo_parsed['collection']
+    c = pymongo.MongoClient(host=settings.mongo_uri)
+    db = c[mongo_parsed['mongo_db']]
 
-    db = conn[config['mongo_db']]
-
-    address = config['host'], int(config['port'])
-    server = WSGIServer(address, Khartoum(db, config))
+    address = settings.host, settings.port
+    server = WSGIServer(address, Khartoum(db, settings))
     try:
-        print "Server running on port %s:%d. Ctrl+C to quit" % address
+        print "Khartoum server running on port %s:%d. Ctrl+C to quit." % address
         server.serve_forever()
     except KeyboardInterrupt:
         server.stop()
-        print "Bye bye"
+        print "Khartoum server stopped."
 
 if __name__ == '__main__':
     main()
