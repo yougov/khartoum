@@ -11,7 +11,7 @@ setup(
         'PyYAML>=3.10',
         'gevent>=1.0rc2,<2',
         'pymongo>=2.1.1',
-        'appsettings==0.3.1',
+        'appsettings==0.3.2',
     ],
     dependency_links = [
         'https://github.com/downloads/surfly/gevent/gevent-1.0rc2.tar.gz#egg=gevent-1.0rc2'
