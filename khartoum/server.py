@@ -87,6 +87,7 @@ class Khartoum(object):
             headers.append(("Content-Encoding", "gzip"))
         else:
             headers.append(('Content-Length', str(f.length)))
+            headers.append(('ETag', f.md5))
 
         if self.settings.cache_days is not None:
             expiration = (datetime.now() +
