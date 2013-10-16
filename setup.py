@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='khartoum',
-    version='0.3.2',
+    version='0.3.3',
     author='Brent Tubbs',
     author_email='brent.tubbs@gmail.com',
     packages=find_packages(),

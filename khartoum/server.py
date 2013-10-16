@@ -87,7 +87,7 @@ class Khartoum(object):
             headers.append(("Content-Encoding", "gzip"))
         else:
             headers.append(('Content-Length', str(f.length)))
-            headers.append(('ETag', f.md5))
+            headers.append(('ETag', str(f.md5)))
 
         if self.settings.cache_days is not None:
             expiration = (datetime.now() +
@@ -100,7 +100,11 @@ class Khartoum(object):
             headers.extend(extra_headers.items())
 
         start_response("200 OK", headers)
-        return f
+        if environ['REQUEST_METHOD'] == 'GET':
+            return f
+        else:
+            f.close()
+            return ''
 
     def _use_gzip(self, mimetype, environ):
         if not mimetype in self.settings.compressable_mimetypes:
