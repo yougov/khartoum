@@ -121,7 +121,7 @@ def main():
 
     settings = get_settings()
 
-    print "Connecting to Mongo at %s." % settings.mongo_url
+    print("Connecting to Mongo at %s." % settings.mongo_url)
     mongo_parsed = parse_mongo_uri(settings.mongo_url)
     settings.mongo_collection = mongo_parsed['collection']
     c = pymongo.MongoClient(host=settings.mongo_url)
@@ -130,11 +130,11 @@ def main():
     address = settings.host, settings.port
     server = WSGIServer(address, Khartoum(db, settings))
     try:
-        print "Khartoum server running on %s:%d. Ctrl+C to quit." % address
+        print("Khartoum server running on %s:%d. Ctrl+C to quit." % address)
         server.serve_forever()
     except KeyboardInterrupt:
         server.stop()
-        print "Khartoum server stopped."
+        print("Khartoum server stopped.")
 
 if __name__ == '__main__':
     main()
