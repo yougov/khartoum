@@ -10,7 +10,7 @@ setup(
     install_requires=[
         'PyYAML>=3.10',
         'gevent>=1.1b6,<2',
-        'pymongo>=2.1.1,<3dev',
+        'pymongo>=2.4,<3dev',
         'appsettings==0.3.2',
     ],
     entry_points = {
