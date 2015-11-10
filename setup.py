@@ -9,7 +9,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         'PyYAML>=3.10',
-        'gevent>=1.0rc2,<2',
+        'gevent>=1.1b6,<2',
         'pymongo>=2.1.1',
         'appsettings==0.3.2',
     ],
