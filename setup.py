@@ -13,9 +13,6 @@ setup(
         'pymongo>=2.1.1,<3dev',
         'appsettings==0.3.2',
     ],
-    dependency_links = [
-        'https://github.com/downloads/surfly/gevent/gevent-1.0rc2.tar.gz#egg=gevent-1.0rc2'
-    ],
     entry_points = {
         'console_scripts': [
             'khartoum = khartoum.server:main',
