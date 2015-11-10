@@ -22,5 +22,5 @@ setup(
         "A simple app for http serving of static files from MongoDB's GridFS "
         "filesystem."),
     long_description=open('README.rst').read(),
-    url='http://bits.btubbs.com/khartoum',
+    url='https://bitbucket.org/btubbs/khartoum',
 )
