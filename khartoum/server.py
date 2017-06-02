@@ -69,7 +69,8 @@ class Khartoum(object):
         # The 'v' parameter in the query string may specify a file version.
         # If none is provided, then '-1' is used, which will return the most
         # recent version.
-        version = int(qparams.get('v', [-1])[0])
+        version, = qparams.get('v', [-1])
+        version = int(version)
         try:
             f = self.fs.get_version(path, version)
         except gridfs.errors.NoFile:
