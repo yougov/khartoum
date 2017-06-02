@@ -1,8 +1,9 @@
 import mimetypes
-import urlparse
 from wsgiref.handlers import format_date_time
 from datetime import datetime, timedelta
 from time import mktime
+
+from six.moves import urllib
 
 from gevent.pywsgi import WSGIServer
 from gevent import monkey
@@ -59,11 +60,11 @@ class Khartoum(object):
     def __call__(self, environ, start_response):
         # PATH_INFO may actually be a full URL, if the request was forwarded
         # from a proxy.
-        path = urlparse.urlparse(environ['PATH_INFO']).path
+        path = urllib.parse.urlparse(environ['PATH_INFO']).path
         if path.startswith('/'):
             path = path[1:]
 
-        qparams = urlparse.parse_qs(environ['QUERY_STRING'])
+        qparams = urllib.parse.parse_qs(environ['QUERY_STRING'])
 
         # The 'v' parameter in the query string may specify a file version.
         # If none is provided, then '-1' is used, which will return the most

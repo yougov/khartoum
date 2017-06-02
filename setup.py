@@ -26,6 +26,7 @@ params = dict(
         'gevent>=1.1b6,<2',
         'pymongo>=2.4,<3dev',
         'appsettings==0.3.2',
+        'six',
     ],
     extras_require={
         'testing': [
