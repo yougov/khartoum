@@ -1,12 +1,12 @@
-#!/usr/bin/python
-from setuptools import setup, find_packages
+import setuptools
 
-setup(
+
+params = dict(
     name='khartoum',
     version='0.3.3',
     author='Brent Tubbs',
     author_email='brent.tubbs@gmail.com',
-    packages=find_packages(),
+    packages=setuptools.find_packages(),
     install_requires=[
         'PyYAML>=3.10',
         'gevent>=1.1b6,<2',
@@ -24,3 +24,5 @@ setup(
     long_description=open('README.rst').read(),
     url='https://bitbucket.org/btubbs/khartoum',
 )
+
+__name__ == '__main__' and setuptools.setup(**params)
