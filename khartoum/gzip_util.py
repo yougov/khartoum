@@ -24,23 +24,22 @@ def parse_encoding_header(header):
 
 
 def gzip_requested(accept_encoding_header):
-
     """
     Check to see if the client can accept gzipped output, and whether or
     not it is even the preferred method. If `identity` is higher, then no
     gzipping should occur.
     """
+
     encodings = parse_encoding_header(accept_encoding_header)
 
     # Do the actual comparisons
-    if('gzip' in encodings):
+    if 'gzip' in encodings:
         return encodings['gzip'] >= encodings['identity']
 
-    elif('*' in encodings):
+    elif '*' in encodings:
         return encodings['*'] >= encodings['identity']
 
-    else:
-        return False
+    return False
 
 # After much Googling and gnashing of teeth, this function stolen from
 # cherrypy.lib.encoding seems to be the most straightforward way to do gzip
