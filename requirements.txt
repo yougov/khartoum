@@ -1,2 +1,4 @@
-./
-requests==0.11.1 # For uptests
+.
+
+# for uptests
+requests==0.11.1
