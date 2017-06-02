@@ -26,7 +26,7 @@ params = dict(
         "filesystem."
     ),
     long_description=open('README.rst').read(),
-    url='https://bitbucket.org/btubbs/khartoum',
+    url='https://github.com/yougov/khartoum',
 )
 
 __name__ == '__main__' and setuptools.setup(**params)
