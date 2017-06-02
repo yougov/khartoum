@@ -23,7 +23,7 @@ def get_settings():
     Set up and return the SettingsParser.
     """
     parser = SettingsParser()
-    parser.add_argument('--host', default='0.0.0.0', env_var='HOST')
+    parser.add_argument('--host', default='::0', env_var='HOST')
     parser.add_argument('--port', default=8000, type=int, env_var='PORT')
     parser.add_argument('--mongo_url',
                         default='mongodb://localhost/khartoum.fs',
