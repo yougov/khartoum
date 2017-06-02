@@ -29,17 +29,10 @@ def gzip_requested(accept_encoding_header):
     not it is even the preferred method. If `identity` is higher, then no
     gzipping should occur.
     """
-
     encodings = parse_encoding_header(accept_encoding_header)
+    enc = encodings.get('gzip', encodings.get('*'))
+    return bool(enc and enc >= encodings['identity'])
 
-    # Do the actual comparisons
-    if 'gzip' in encodings:
-        return encodings['gzip'] >= encodings['identity']
-
-    elif '*' in encodings:
-        return encodings['*'] >= encodings['identity']
-
-    return False
 
 # After much Googling and gnashing of teeth, this function stolen from
 # cherrypy.lib.encoding seems to be the most straightforward way to do gzip
