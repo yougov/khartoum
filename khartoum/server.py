@@ -107,7 +107,7 @@ class Khartoum(object):
             return ''
 
     def _use_gzip(self, mimetype, environ):
-        if not mimetype in self.settings.compressable_mimetypes:
+        if mimetype not in self.settings.compressable_mimetypes:
             return False
 
         encode_header = environ.get('HTTP_ACCEPT_ENCODING', '')
