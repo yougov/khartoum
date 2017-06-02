@@ -20,7 +20,7 @@ import requests
 
 def random_404(host, port, protocol='http'):
     file = ''.join([random.choice('abcdefghijklmnop') for x in range(20)])
-    resp = requests.get('%(protocol)s://%(host)s:%(port)s/%(file)s' % vars())
+    resp = requests.get('%(protocol)s://%(host)s:%(port)s/%(file)s' % locals())
     assert resp.status_code == 404
 
 
