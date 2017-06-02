@@ -6,6 +6,20 @@ def parse_encoding_header(header):
     """
     Break up the `HTTP_ACCEPT_ENCODING` header into a dict of the form,
     {'encoding-name':qvalue}.
+
+    >>> parse_encoding_header('') == {'': 1, 'identity': 1.0}
+    True
+
+    >>> parse_encoding_header('*') == {'*': 1, 'identity': 1.0}
+    True
+
+    >>> expected = {'identity': 1.0, 'gzip': 1.0, 'compress': 0.5}
+    >>> parse_encoding_header('compress;q=0.5, gzip;q=1.0') == expected
+    True
+
+    >>> expected = {'*': 0.0, 'gzip': 1.0, 'identity': 0.5}
+    >>> parse_encoding_header('gzip;q=1.0, identity; q=0.5, *;q=0') == expected
+    True
     """
     encodings = {'identity':1.0}
 
