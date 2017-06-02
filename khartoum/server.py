@@ -1,4 +1,5 @@
 import mimetypes
+import io
 from wsgiref.handlers import format_date_time
 from datetime import datetime, timedelta
 from time import mktime
@@ -75,7 +76,7 @@ class Khartoum(object):
             f = self.fs.get_version(path, version)
         except gridfs.errors.NoFile:
             start_response("404 NOT FOUND", [('Content-Type', 'text/plain')])
-            return "File not found\n"
+            return io.BytesIO(b"File not found\n")
 
         headers = [("Vary", "Accept-Encoding")]
 
@@ -105,7 +106,7 @@ class Khartoum(object):
             return f
         else:
             f.close()
-            return ''
+            return io.BytesIO(b'')
 
     def _use_gzip(self, mimetype, environ):
         if mimetype not in self.settings.compressable_mimetypes:
