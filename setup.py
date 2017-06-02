@@ -40,9 +40,6 @@ params = dict(
         "Programming Language :: Python :: 3",
     ],
     entry_points = {
-        'console_scripts': [
-            'khartoum = khartoum.server:main',
-        ],
     },
 )
 

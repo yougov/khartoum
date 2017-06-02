@@ -1,1 +1,1 @@
-web: khartoum
+web: python -m khartoum
