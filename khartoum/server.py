@@ -111,10 +111,7 @@ class Khartoum(object):
             return False
 
         encode_header = environ.get('HTTP_ACCEPT_ENCODING', '')
-        if not gzip_util.gzip_requested(encode_header):
-            return False
-
-        return True
+        return gzip_util.gzip_requested(encode_header)
 
 
 def main():
