@@ -10,8 +10,7 @@ from gevent import monkey
 # monkeypatch all socket things before importing pymongo.
 monkey.patch_all()
 
-import pymongo
-from pymongo.uri_parser import parse_uri as parse_mongo_uri
+import pymongo.uri_parser
 import gridfs
 from appsettings import SettingsParser
 
@@ -119,7 +118,7 @@ def main():
     settings = get_settings()
 
     print("Connecting to Mongo at %s." % settings.mongo_url)
-    mongo_parsed = parse_mongo_uri(settings.mongo_url)
+    mongo_parsed = pymongo.uri_parser.parse_uri(settings.mongo_url)
     settings.mongo_collection = mongo_parsed['collection']
     c = pymongo.MongoClient(host=settings.mongo_url)
     db = c[mongo_parsed['database']]
