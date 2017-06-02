@@ -28,6 +28,9 @@ params = dict(
         'appsettings==0.3.2',
     ],
     extras_require={
+        'testing': [
+            'pytest >= 2.8',
+        ],
     },
     setup_requires=[
         'setuptools_scm>=1.15.0',
