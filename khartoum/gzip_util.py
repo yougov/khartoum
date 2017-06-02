@@ -24,16 +24,11 @@ def parse_encoding_header(header):
     encodings = {'identity':1.0}
 
     for encoding in header.split(","):
-        if(encoding.find(";") > -1):
-            encoding, qvalue = encoding.split(";")
-            encoding = encoding.strip()
-            qvalue = qvalue.split('=', 1)[1]
-            if(qvalue != ""):
-                encodings[encoding] = float(qvalue)
-            else:
-                encodings[encoding] = 1
-        else:
-            encodings[encoding] = 1
+        encoding, sep, params = encoding.partition(';')
+        encoding = encoding.strip()
+        key, sep, qvalue = params.partition('=')
+        encodings[encoding] = float(qvalue or 1)
+
     return encodings
 
 
