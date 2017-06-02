@@ -4,8 +4,8 @@ import time
 
 def parse_encoding_header(header):
     """
-    Break up the `HTTP_ACCEPT_ENCODING` header into a dict of the form,
-    {'encoding-name':qvalue}.
+    Parse the HTTP Accept-Encoding header into a dict of the form,
+    {encoding: qvalue}.
 
     >>> parse_encoding_header('') == {'': 1, 'identity': 1.0}
     True
