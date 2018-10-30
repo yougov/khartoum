@@ -54,20 +54,29 @@ class Khartoum(object):
         self.settings = settings
         self.fs = gridfs.GridFS(db, settings.mongo_collection)
 
+    @staticmethod
+    def _strip_url(info):
+        """
+        PATH_INFO may actually be a full URL if the
+        request was forwarded from a proxy. Return only
+        the path portion.
+        """
+        return urllib.parse.urlparse(info).path
+
+    def _parse_path(self, info):
+        path = self._strip_url(info)
+        return path[1:] if path.startswith('/') else path
+
     def __call__(self, environ, start_response):
-        # PATH_INFO may actually be a full URL, if the request was forwarded
-        # from a proxy.
-        path = urllib.parse.urlparse(environ['PATH_INFO']).path
-        if path.startswith('/'):
-            path = path[1:]
+        path = self._parse_path(environ['PATH_INFO'])
 
         qparams = urllib.parse.parse_qs(environ['QUERY_STRING'])
+        # The 'v' parameter in the query string may specify
+        # a file version, defaulting to -1 (most recent).
+        qparams.setdefault('v', [-1])
 
-        # The 'v' parameter in the query string may specify a file version.
-        # If none is provided, then '-1' is used, which will return the most
-        # recent version.
-        version, = qparams.get('v', [-1])
-        version = int(version)
+        version_str, = qparams['v']
+        version = int(version_str)
         try:
             f = self.fs.get_version(path, version)
         except gridfs.errors.NoFile:
