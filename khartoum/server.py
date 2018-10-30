@@ -1,10 +1,9 @@
 import mimetypes
 import io
+import urllib.parse
 from wsgiref.handlers import format_date_time
 from datetime import datetime, timedelta
 from time import mktime
-
-from six.moves import urllib
 
 import gevent.monkey
 from gevent.pywsgi import WSGIServer
