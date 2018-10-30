@@ -1,3 +1,12 @@
+v2.1.0
+======
+
+#2: Use gzip compress function from `cherrypy
+<https://cherrypy.org>`_ instead of keeping
+a local fork of old code.
+
+#1: Incorporate fix from v1.2.1.
+
 v2.0.0
 ======
 
