@@ -34,5 +34,6 @@ def main(host, port):
             g[i](host, port)
             print(i, 'passed')
 
+
 if __name__ == '__main__':
     main(*sys.argv[1:])
