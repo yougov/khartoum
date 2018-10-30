@@ -130,7 +130,7 @@ def main():
     print("Connecting to Mongo at %s." % settings.mongo_url)
     mongo_parsed = pymongo.uri_parser.parse_uri(settings.mongo_url)
     settings.mongo_collection = mongo_parsed['collection']
-    c = pymongo.MongoClient(host=settings.mongo_url)
+    c = pymongo.MongoClient(host=settings.mongo_url, **mongo_parsed['options'])
     db = c[mongo_parsed['database']]
 
     address = settings.host, settings.port
