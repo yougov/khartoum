@@ -10,7 +10,7 @@ from gevent.pywsgi import WSGIServer
 from gevent import monkey
 
 # monkeypatch all socket things before importing pymongo.
-monkey.patch_all()
+monkey.patch_all()  # noqa
 
 import pymongo.uri_parser
 import gridfs
@@ -134,6 +134,7 @@ def main():
     except KeyboardInterrupt:
         server.stop()
         print("Khartoum server stopped.")
+
 
 if __name__ == '__main__':
     main()

@@ -2,6 +2,7 @@ import zlib
 import struct
 import time
 
+
 def parse_encoding_header(header):
     """
     Parse the HTTP Accept-Encoding header into a dict of the form,
@@ -21,7 +22,7 @@ def parse_encoding_header(header):
     >>> parse_encoding_header('gzip;q=1.0, identity; q=0.5, *;q=0') == expected
     True
     """
-    encodings = {'identity':1.0}
+    encodings = {'identity': 1.0}
 
     for encoding in header.split(","):
         encoding, sep, params = encoding.partition(';')
