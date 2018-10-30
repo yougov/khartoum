@@ -3,6 +3,11 @@ v2.0.0
 
 Dropped support for Python 3.5 and earlier.
 
+v1.2.1
+======
+
+#1: Fix TypeError on Python 3 in gzip handler.
+
 v1.2.0
 ======
 
