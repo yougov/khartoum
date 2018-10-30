@@ -2,8 +2,6 @@ import io
 import sys
 import functools
 
-import six
-
 import pytest
 import requests_toolbelt.sessions
 import portend
@@ -58,7 +56,7 @@ def test_upload_retrieve_binary(khartoum_instance):
 	"""
 	What about a binary file
 	"""
-	binfile = io.BytesIO(b''.join(map(six.int2byte, range(256))))
+	binfile = io.BytesIO(bytes(range(256)))
 	inst = khartoum_instance
 	path = 'test/file.bin'
 	fs = helper.connect_gridfs(inst.mongo_url)
