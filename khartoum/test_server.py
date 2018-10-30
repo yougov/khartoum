@@ -66,3 +66,19 @@ def test_upload_retrieve_binary(khartoum_instance):
 	resp = inst.session.get(path)
 	resp.raise_for_status()
 	assert resp.content == binfile.getvalue()
+
+
+@pytest.mark.xfail(six.PY3, reason="#1")
+def test_upload_retrieve_compressable(khartoum_instance):
+	"""
+	HTML is compressable
+	"""
+	binfile = io.BytesIO(b'<html>hello world</html>')
+	inst = khartoum_instance
+	path = 'test/hello.html'
+	fs = helper.connect_gridfs(inst.mongo_url)
+	fs.put(binfile, filename=path)
+	resp = inst.session.get(path)
+	resp.raise_for_status()
+	assert resp.headers['Content-Encoding'] == 'gzip'
+	assert resp.content == binfile.getvalue()
