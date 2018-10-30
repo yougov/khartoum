@@ -1,3 +1,8 @@
+v1.2.1
+======
+
+#1: Fix TypeError on Python 3 in gzip handler.
+
 v1.2.0
 ======
 

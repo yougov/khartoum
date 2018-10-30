@@ -68,7 +68,6 @@ def test_upload_retrieve_binary(khartoum_instance):
 	assert resp.content == binfile.getvalue()
 
 
-@pytest.mark.xfail(six.PY3, reason="#1")
 def test_upload_retrieve_compressable(khartoum_instance):
 	"""
 	HTML is compressable
