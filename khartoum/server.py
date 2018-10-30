@@ -6,11 +6,8 @@ from time import mktime
 
 from six.moves import urllib
 
+import gevent.monkey
 from gevent.pywsgi import WSGIServer
-from gevent import monkey
-
-# monkeypatch all socket things before importing pymongo.
-monkey.patch_all()  # noqa
 
 import pymongo.uri_parser
 import gridfs
@@ -116,6 +113,8 @@ class Khartoum(object):
 
 
 def main():
+
+    gevent.monkey.patch_all()
 
     settings = get_settings()
 
