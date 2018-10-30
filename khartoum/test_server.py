@@ -1,5 +1,8 @@
+import io
 import sys
 import functools
+
+import six
 
 import pytest
 import requests_toolbelt.sessions
@@ -49,3 +52,17 @@ def test_upload_retrieve(khartoum_instance):
 		fs.put(infile, filename=path)
 	resp = inst.session.get(path)
 	resp.raise_for_status()
+
+
+def test_upload_retrieve_binary(khartoum_instance):
+	"""
+	What about a binary file
+	"""
+	binfile = io.BytesIO(b''.join(map(six.int2byte, range(256))))
+	inst = khartoum_instance
+	path = 'test/file.bin'
+	fs = helper.connect_gridfs(inst.mongo_url)
+	fs.put(binfile, filename=path)
+	resp = inst.session.get(path)
+	resp.raise_for_status()
+	assert resp.content == binfile.getvalue()
