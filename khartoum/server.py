@@ -11,6 +11,7 @@ from gevent.pywsgi import WSGIServer
 import pymongo.uri_parser
 import gridfs
 from appsettings import SettingsParser
+import cherrypy.lib.encoding
 
 from khartoum import gzip_util
 
@@ -89,7 +90,8 @@ class Khartoum(object):
             headers.append(('Content-Type', mimetype))
 
         if self._use_gzip(mimetype, environ):
-            f = gzip_util.compress(f, self.settings.compression_level)
+            f = cherrypy.lib.encoding.compress(
+                f, self.settings.compression_level)
             headers.append(("Content-Encoding", "gzip"))
         else:
             headers.append(('Content-Length', str(f.length)))
