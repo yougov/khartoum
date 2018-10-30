@@ -38,16 +38,15 @@ def get_settings():
     settings = parser.parse_args()
 
     # The set of compressable mimetypes might be configured from a yaml file,
-    # but can't be set on the command line or in an env var, so we don't add an
-    # argument for that.  Instead, just stick the default on right here if a
-    # config file hasn't already set it.
-    if not hasattr(settings, 'compressable_mimetypes'):
-        settings.compressable_mimetypes = [
-            'text/plain',
-            'text/html',
-            'application/javascript',
-            'text/css',
-        ]
+    # but can't be set on the command line or in an env var, so no argument is
+    # defined. Instead, just set the default here.
+    defaults = [
+        'text/plain',
+        'text/html',
+        'application/javascript',
+        'text/css',
+    ]
+    vars(settings).setdefault('compressible_mimetypes', defaults)
 
     return settings
 
