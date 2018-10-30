@@ -1,3 +1,8 @@
+v2.0.0
+======
+
+Dropped support for Python 3.5 and earlier.
+
 v1.2.0
 ======
 
