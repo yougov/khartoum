@@ -43,7 +43,7 @@ def get_settings():
         'application/javascript',
         'text/css',
     ]
-    vars(settings).setdefault('compressible_mimetypes', defaults)
+    vars(settings).setdefault('compressable_mimetypes', defaults)
 
     return settings
 
