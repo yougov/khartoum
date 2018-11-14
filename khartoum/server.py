@@ -23,14 +23,17 @@ def get_settings():
     parser = SettingsParser()
     parser.add_argument('--host', default='::0', env_var='HOST')
     parser.add_argument('--port', default=8000, type=int, env_var='PORT')
-    parser.add_argument('--mongo_url',
-                        default='mongodb://localhost/khartoum.fs',
-                        env_var='MONGODB_URL')
-    parser.add_argument('--compression_level', default=6, type=int,
-                        env_var='COMPRESSION_LEVEL')
+    parser.add_argument(
+        '--mongo_url',
+        default='mongodb://localhost/khartoum.fs',
+        env_var='MONGODB_URL')
+    parser.add_argument(
+        '--compression_level', default=6, type=int,
+        env_var='COMPRESSION_LEVEL')
 
-    parser.add_argument('--cache_days', default=365, type=int,
-                        env_var='CACHE_DAYS')
+    parser.add_argument(
+        '--cache_days', default=365, type=int,
+        env_var='CACHE_DAYS')
 
     settings = parser.parse_args()
 
