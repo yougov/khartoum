@@ -1,3 +1,8 @@
+v2.1.1
+======
+
+#3: Restore support for extra_headers configuration option.
+
 v2.1.0
 ======
 
