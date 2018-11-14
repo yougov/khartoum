@@ -35,6 +35,8 @@ def get_settings():
         '--cache_days', default=365, type=int,
         env_var='CACHE_DAYS')
 
+    parser.add_setting('extra_headers', default={})
+
     settings = parser.parse_args()
 
     # The set of compressable mimetypes might be configured from a yaml file,
@@ -106,9 +108,7 @@ class Khartoum(object):
             stamp = mktime(expiration.timetuple())
             headers.append(('Expires', format_date_time(stamp)))
 
-        extra_headers = getattr(self.settings, 'extra_headers', None)
-        if extra_headers:
-            headers.extend(extra_headers.items())
+        headers.extend(self.settings.extra_headers.items())
 
         start_response("200 OK", headers)
         if environ['REQUEST_METHOD'] == 'GET':
